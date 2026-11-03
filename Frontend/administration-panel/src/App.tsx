@@ -1,122 +1,305 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+
+import { useState } from "react";
+import {
+  GraduationCap,
+  ShieldCheck,
+  Wallet,
+  UserPlus,
+  LayoutDashboard,
+  Users,
+  BookOpen,
+  Settings,
+  Bell,
+  LogOut,
+  ArrowRight,
+  Menu,
+  FileText,
+  CreditCard,
+  ClipboardList,
+} from "lucide-react";
+
+import { college } from "./config/college";
+import "./index.css";
+
+type Role = "Principal" | "Finance Manager" | "Admissions Officer";
+
+const roles = [
+  {
+    name: "Principal" as Role,
+    description: "Manage and monitor the entire school.",
+    icon: ShieldCheck,
+  },
+  {
+    name: "Finance Manager" as Role,
+    description: "Manage fees, payments and expenses.",
+    icon: Wallet,
+  },
+  {
+    name: "Admissions Officer" as Role,
+    description: "Manage applications and student admissions.",
+    icon: UserPlus,
+  },
+];
+
+const dashboardData = {
+  Principal: {
+    stats: [
+      ["Total Students", "1,250", GraduationCap],
+      ["Total Teachers", "48", Users],
+      ["Total Classes", "32", BookOpen],
+      ["Pending Admissions", "25", ClipboardList],
+    ],
+    menu: ["Dashboard", "Students", "Teachers", "Classes", "Reports", "Settings"],
+    activities: [
+      "New student admitted",
+      "Teacher registration completed",
+      "Class schedule updated",
+    ],
+  },
+  "Finance Manager": {
+    stats: [
+      ["Total Fee Collection", "Rs. 8.5M", Wallet],
+      ["Pending Fees", "Rs. 1.2M", CreditCard],
+      ["Total Expenses", "Rs. 2.1M", FileText],
+      ["Payments Today", "Rs. 45K", ClipboardList],
+    ],
+    menu: ["Dashboard", "Fee Collection", "Pending Fees", "Expenses", "Reports", "Settings"],
+    activities: [
+      "New fee payment received",
+      "Monthly expense recorded",
+      "Pending fee report updated",
+    ],
+  },
+  "Admissions Officer": {
+    stats: [
+      ["Total Applications", "180", ClipboardList],
+      ["New Applications", "24", UserPlus],
+      ["Approved Admissions", "125", GraduationCap],
+      ["Pending Applications", "31", FileText],
+    ],
+    menu: ["Dashboard", "Applications", "New Admission", "Students", "Reports", "Settings"],
+    activities: [
+      "New admission application received",
+      "Student documents submitted",
+      "Admission application approved",
+    ],
+  },
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [role, setRole] = useState<Role | null>(null);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  if (!role) {
+    return (
+      <div className="role-page">
+        <div className="role-header">
+          <div className="brand-icon"><GraduationCap size={32} /></div>
+          <h1>{college.name}</h1>
+          <p>Administration Portal</p>
+        </div>
+
+        <div className="role-content">
+          <h2>Welcome to Administration</h2>
+          <p>Select your department to continue.</p>
+
+          <div className="role-grid">
+            {roles.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <button
+                  className="role-card"
+                  key={item.name}
+                  onClick={() => setRole(item.name)}
+                >
+                  <div className="role-icon"><Icon size={30} /></div>
+                  <h3>{item.name}</h3>
+                  <p>{item.description}</p>
+                  <span>Continue to Login <ArrowRight size={16} /></span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <p className="role-footer">
+          © {new Date().getFullYear()} {college.name}. All rights reserved.
+        </p>
+      </div>
+    );
+  }
+
+  if (!loggedIn) {
+    const SelectedIcon = roles.find((item) => item.name === role)!.icon;
+
+    return (
+      <div className="login-page">
+        <div className="login-card">
+          <button className="back-button" onClick={() => setRole(null)}>
+            ← Back to role selection
+          </button>
+
+          <div className="login-icon"><SelectedIcon size={32} /></div>
+          <h1>{role} Login</h1>
+          <p>Sign in to access your dashboard.</p>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setLoggedIn(true);
+            }}
+          >
+            <label>Email Address</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+
+            <button className="login-submit" type="submit">
+              Sign In <ArrowRight size={17} />
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  const data = dashboardData[role];
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="admin-layout">
+      <aside className="sidebar">
+        <div className="sidebar-brand">
+          <GraduationCap size={32} />
+          <div>
+            <h2>{college.shortName}</h2>
+            <span>Administration</span>
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+
+        <p className="menu-label">MAIN MENU</p>
+
+        <nav>
+          {data.menu.map((item) => (
+            <button
+              key={item}
+              onClick={() => setActiveMenu(item)}
+              className={`sidebar-link ${activeMenu === item ? "active" : ""}`}
+            >
+              <LayoutDashboard size={19} />
+              <span>{item}</span>
+            </button>
+          ))}
+        </nav>
+
         <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          className="logout-button"
+          onClick={() => {
+            setLoggedIn(false);
+            setRole(null);
+            setActiveMenu("Dashboard");
+            setEmail("");
+            setPassword("");
+          }}
         >
-          Count is {count}
+          <LogOut size={19} /> Logout
         </button>
-      </section>
+      </aside>
 
-      <div className="ticks"></div>
+      <main className="main-content">
+        <header className="topbar">
+          <div className="topbar-left">
+            <button className="menu-button"><Menu size={22} /></button>
+            <div>
+              <h2>{activeMenu}</h2>
+              <p>{college.name}</p>
+            </div>
+          </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <div className="topbar-actions">
+            <Bell size={21} />
+            <div className="topbar-user">
+              <div className="avatar">{role[0]}</div>
+              <div>
+                <strong>{role}</strong>
+                <span>Administrator</span>
+              </div>
+            </div>
+          </div>
+        </header>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        <section className="dashboard-body">
+          <div className="welcome-section">
+            <div>
+              <h1>Welcome, {role}!</h1>
+              <p>Here's your school management overview.</p>
+            </div>
+          </div>
+
+          {activeMenu === "Dashboard" ? (
+            <>
+              <div className="stats-grid">
+                {data.stats.map(([title, value, Icon]) => {
+                  const StatIcon = Icon as typeof GraduationCap;
+
+                  return (
+                    <div className="stat-card" key={title as string}>
+                      <div className="stat-icon">
+                        <StatIcon size={23} />
+                      </div>
+                      <p>{title as string}</p>
+                      <h2>{value as string}</h2>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <section className="panel">
+                <div className="panel-heading">
+                  <div>
+                    <h3>Recent Activities</h3>
+                    <p>Latest department updates</p>
+                  </div>
+                </div>
+
+                {data.activities.map((activity, index) => (
+                  <div className="activity-item" key={index}>
+                    <div className="activity-dot" />
+                    <div className="activity-info">
+                      <strong>{activity}</strong>
+                      <p>Recent activity</p>
+                    </div>
+                  </div>
+                ))}
+              </section>
+            </>
+          ) : (
+            <section className="panel section-placeholder">
+              <div className="stat-icon"><Settings size={28} /></div>
+              <h2>{activeMenu}</h2>
+              <p>This section will be developed next.</p>
+            </section>
+          )}
+        </section>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
